@@ -5,13 +5,19 @@ on:
     branches:
       - main
       - architecture/cortana-consciousness-core-v1
+      - implementation/foundation-engine-v0.1.0
   pull_request:
     branches:
       - main
+      - architecture/cortana-consciousness-core-v1
 
 jobs:
   python-tests:
     runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.14"]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -19,7 +25,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
           cache: pip
 
       - name: Install project and test dependencies

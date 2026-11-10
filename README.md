@@ -20,6 +20,8 @@ python -m pytest
 python -m cortana.runtime.bootstrap
 ```
 
+The runtime remains active until Ctrl+C. For programmatic use, call `CortanaApplication.start()` and `stop()`.
+
 Run API locally:
 ```powershell
 python -m uvicorn cortana.api.app:app --host 127.0.0.1 --port 8765
@@ -27,6 +29,7 @@ python -m uvicorn cortana.api.app:app --host 127.0.0.1 --port 8765
 Do not expose the API beyond localhost until authentication and TLS are implemented.
 
 ## Included in v0.1.0
+- Application lifecycle coordinator with startup rollback and graceful shutdown
 - Async in-process Event Bus
 - Module Registry and lifecycle management
 - Runtime health snapshot and optional HTTP endpoints
@@ -41,7 +44,7 @@ Do not expose the API beyond localhost until authentication and TLS are implemen
 No shell execution, device activation, cloud network call, or production DPAPI key lifecycle is implemented. Sensitive requests are routed locally by policy. Keys must never be hard-coded or committed. Production Windows key management and recovery are a later milestone. Raw media is not persisted.
 
 ## Layout
-- `src/cortana/runtime`: bootstrap, event bus, module registry, health.
+- `src/cortana/runtime`: application lifecycle, bootstrap, event bus, module registry, health.
 - `src/cortana/contracts`: model and perception contracts.
 - `src/cortana/ai_router`: privacy-aware provider selection.
 - `src/cortana/governance`: default-deny authorization.
