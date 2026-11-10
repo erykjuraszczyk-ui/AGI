@@ -1,5 +1,3 @@
-import asyncio
-
 import pytest
 
 from cortana.runtime.application import CortanaApplication, RuntimeState
