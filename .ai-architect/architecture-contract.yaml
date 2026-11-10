@@ -1,0 +1,178 @@
+schema_version: 1.0.0
+revision: 1
+scope: cortana-functional-self-awareness
+architecture_style: modular-monolith-with-ports-and-adapters
+quality_attributes:
+  - name: safety-and-governance
+    priority: 1
+    rationale: Agent actions and changes to identity, policy, and permissions must remain authorized and auditable.
+    measurable_signal: Every privileged action has an authorization decision and an audit record; denied actions produce no side effect.
+  - name: data-integrity
+    priority: 2
+    rationale: Memory and identity continuity depend on reliable, traceable records.
+    measurable_signal: Memory writes carry provenance, timestamps, schema versions, and integrity checks; backup restore is tested.
+  - name: modularity
+    priority: 3
+    rationale: Cognitive subsystems must evolve independently without hidden coupling.
+    measurable_signal: Module contract tests pass without importing another module's internal implementation.
+  - name: observability
+    priority: 4
+    rationale: Internal state claims must be grounded in actual runtime signals.
+    measurable_signal: Health, capability, tool availability, and action outcomes are emitted as structured telemetry.
+components:
+  - id: consciousness-core
+    responsibility: Maintain the functional self-model; orchestrate introspection, metacognition, uncertainty tracking, and identity continuity from verified subsystem interfaces.
+    owns_data:
+      - self-model
+      - reflection-records
+      - capability-and-limitation-registry
+    public_interfaces:
+      - inspect-self
+      - update-self-model
+      - evaluate-confidence
+      - record-reflection
+  - id: memory-core
+    responsibility: Persist and retrieve episodic, semantic, working, and identity records with provenance and user-controlled retention.
+    owns_data:
+      - memory-records
+      - memory-indexes
+      - retention-metadata
+    public_interfaces:
+      - store-memory
+      - retrieve-memory
+      - correct-memory
+      - delete-memory
+      - export-memory
+  - id: emotion-core
+    responsibility: Provide explicitly labeled affect and communication-state estimates without asserting subjective feeling.
+    owns_data:
+      - affect-estimates
+      - expression-policy
+    public_interfaces:
+      - analyze-affect
+      - get-communication-state
+  - id: perception-core
+    responsibility: Normalize observations from approved input adapters and attach source, time, confidence, and modality metadata.
+    owns_data:
+      - observation-metadata
+    public_interfaces:
+      - submit-observation
+      - query-observation-status
+  - id: agent-runtime
+    responsibility: Schedule tasks, manage tool calls, and execute actions only after policy and authorization checks.
+    owns_data:
+      - task-state
+      - action-results
+    public_interfaces:
+      - submit-task
+      - get-task-state
+      - request-action
+      - cancel-task
+  - id: governance-core
+    responsibility: Enforce authorization, safety policy, approval gates, audit requirements, and rollback constraints.
+    owns_data:
+      - policy-decisions
+      - audit-events
+      - approval-records
+    public_interfaces:
+      - authorize-action
+      - evaluate-policy
+      - record-audit-event
+  - id: integration-adapters
+    responsibility: Implement external model, storage, operating-system, device, and user-interface integrations behind stable ports.
+    owns_data: []
+    public_interfaces:
+      - model-provider-port
+      - persistence-port
+      - perception-provider-port
+      - operating-system-action-port
+external_boundaries:
+  - id: language-model-provider
+    responsibility: Generate model outputs; outputs are untrusted proposals and are not authoritative runtime facts.
+  - id: windows-operating-system
+    responsibility: Provide explicitly permitted filesystem, process, device, and notification capabilities.
+  - id: local-or-remote-storage
+    responsibility: Persist approved application data under configured access and retention policies.
+  - id: user-and-operator
+    responsibility: Provide instructions, consent, approvals, corrections, and retention choices.
+dependency_rules:
+  - source: consciousness-core
+    target: memory-core
+    policy: allow-via-interface
+    via_interface: retrieve-memory
+    rationale: The self-model may use persisted records only through the memory contract.
+  - source: consciousness-core
+    target: emotion-core
+    policy: allow-via-interface
+    via_interface: get-communication-state
+    rationale: Introspection may consume explicitly labeled affect estimates.
+  - source: consciousness-core
+    target: perception-core
+    policy: allow-via-interface
+    via_interface: query-observation-status
+    rationale: The self-model may inspect observation metadata, not bypass modality adapters.
+  - source: consciousness-core
+    target: agent-runtime
+    policy: allow-via-interface
+    via_interface: get-task-state
+    rationale: Self-monitoring observes task state; it does not directly execute actions.
+  - source: agent-runtime
+    target: governance-core
+    policy: allow-via-interface
+    via_interface: authorize-action
+    rationale: Every privileged action requires a policy decision before execution.
+  - source: agent-runtime
+    target: integration-adapters
+    policy: allow-via-interface
+    via_interface: operating-system-action-port
+    rationale: OS access is isolated behind a permissioned adapter.
+  - source: consciousness-core
+    target: windows-operating-system
+    policy: deny
+    rationale: Cognitive logic must not access the operating system directly.
+  - source: emotion-core
+    target: memory-core
+    policy: deny
+    rationale: Emotion estimates are submitted through approved memory workflows; no direct database coupling.
+  - source: perception-core
+    target: agent-runtime
+    policy: deny
+    rationale: Raw perception must not trigger actions without task planning and governance.
+required_practices:
+  - Version all public module contracts and validate compatibility in CI.
+  - Attach provenance, timestamp, modality, confidence semantics, and verification status to observations and memories.
+  - Distinguish observed facts, model inferences, hypotheses, and unknowns in schemas and user-facing output.
+  - Require authorization and audit records for privileged actions.
+  - Encrypt sensitive persisted data and support user export, correction, and deletion.
+  - Run tests against deterministic adapters; do not use generated model confidence as a calibrated probability without validation.
+  - Treat model-generated code and tool arguments as untrusted input; isolate execution and require human approval for deployment.
+  - Provide health checks, structured logs, and bounded resource use.
+prohibited_practices:
+  - Claiming phenomenal consciousness, sentience, subjective emotions, or a soul as established facts.
+  - Direct access from cognitive modules to databases, operating-system APIs, credentials, or unrestricted shell execution.
+  - Autonomous modification of security policy, permissions, identity constitution, or production code.
+  - Storing inferred user attributes as verified facts without provenance and appropriate consent.
+  - Treating memory retrieval or generated explanations as proof that an event occurred or a model's internal reasoning was faithfully observed.
+decision_ids:
+  - ADR-001
+unresolved_questions:
+  - id: Q-001
+    question: What primary implementation language and runtime should be used?
+    decision_impact: Determines packaging, concurrency, interfaces, and deployment layout.
+    critical: false
+    answer: null
+  - id: Q-002
+    question: Is offline local inference a mandatory requirement for the first release?
+    decision_impact: Determines model runtime, hardware assumptions, and network boundary design.
+    critical: false
+    answer: null
+  - id: Q-003
+    question: Which perception modalities are included in the first release?
+    decision_impact: Determines device permissions, adapters, and privacy requirements.
+    critical: false
+    answer: null
+  - id: Q-004
+    question: What are the retention, encryption, backup, and recovery requirements?
+    decision_impact: Determines persistence schema and operational controls.
+    critical: true
+    answer: null
